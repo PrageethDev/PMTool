@@ -45,11 +45,6 @@ class threadForWebTest (threading.Thread):
     finishingTheThread = 0
 
 
-    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-    params = urllib.urlencode({'@number': 12524, '@type': 'issue', '@action': 'show'})
-
-
-
     def __init__(self, threadID, threadName):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -258,7 +253,7 @@ class threadForRemoteServerTest(threading.Thread):
             if selectingCommand == "1":
                 command = 'free'
             elif selectingCommand == "2":
-                command = 'watch -n1 free'
+                command = 'free'
 
         except Exception:
             print "Can't login to remote server; check credentials"
@@ -506,12 +501,6 @@ def startingTheProgramme():
     if selectingOpt == 1:
         webTestInitialization()
         creatingUsers_threadsForWebTests()
-        # global threadsForWebTests
-        # threadLength = len(threadsForWebTests)
-        # print threadLength
-        #
-        # i = threadsForWebTests
-        # print i
     elif selectingOpt == 2:
         mySQLPerformenceTestInitialization()
         creatingUsers_threadsForDBTests()
