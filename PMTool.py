@@ -4,14 +4,12 @@ import logging
 import paramiko
 import requests
 import time
-import httplib
 import threading
 from datetime import datetime
 import traceback
-import urllib
 import _mysql
 import sys
-import http
+
 
 threadsForWebTests = []
 threadsForRemoteServerTests = []
@@ -494,6 +492,7 @@ def startingTheProgramme():
                           "1) Web test\n"
                           "2) MySQL test\n"
                           "3) Checking a remote servers current usage\n"
+                         ""
                           "4) Web test with remote servers usage")
 
     if selectingOpt == 1:
