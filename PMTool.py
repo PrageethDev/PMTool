@@ -28,9 +28,7 @@ logger2 = logging.getLogger('myapp.area2')
 
 class threadForWebTest (threading.Thread):
 
-    #urlToServer = "http://www.google.lk"
-    tesSerURL = "http://127.0.0.1:10002"
-    #urlToServer = "http://www.sdfsdfs.com"
+    tesSerURL = "" #http://google.lk
     timeToWait = 1
 
     noOfUse = 0
