@@ -24,16 +24,30 @@ logging.basicConfig(filename='log/PerformenceMeter.log', level=logging.DEBUG)
 logger1 = logging.getLogger('RSTest')
 logger2 = logging.getLogger('myapp.area2')
 
+#Variables for web tests
+
+#No of threads in the begining (Requests in a request-batch)
+noOfThrInTheBeg = 0
+
+#Request-batch count
+reqBatCou = 0
+
+#Time interval
+timInt = 0
+
+#Increment number
+reqBatCouInc = 0
+
+#Time incrementation
+timIntInc = 0
+
+
 class threadForWebTest (threading.Thread):
 
     tesSerURL = "" #http://google.lk
     timeToWait = 1
 
-    noOfUse = 0
-    reqBatCou = 0
-    noOfReqPerBat = 0
-    timInt = 0
-    incNum = 0
+
     requestType = 0
 
     fireNum = 0
@@ -146,19 +160,14 @@ class threadForWebTest (threading.Thread):
     def firingHttpRequests(self, threadID):
         time.sleep(1)
         if self.requestType == 2:
-            for count in range(0, self.noOfReqPerBat):
                 self.httpGetRequest(threadID)
-            self.noOfReqPerBat += self.incNum
 
         elif self.requestType == 3:
-            for count in range(0, self.noOfReqPerBat):
                 self.httpPostRequest(threadID)
-            self.noOfReqPerBat += self.incNum
 
         elif self.requestType == 1:
-            for count in range(0, self.noOfReqPerBat):
                 self.httpHeadRequest(threadID)
-            self.noOfReqPerBat += self.incNum
+
 
 
 
@@ -166,24 +175,14 @@ class threadForWebTest (threading.Thread):
     def processingWorks(self, threadID):
         queueLock.acquire()
     #Releasing the lock
-        for x in range(0, 1000):
-            time.sleep(0.001)
+        while 1:
             if lockRelease == 1:
                 if queueLock.locked():
                     queueLock.release()
-                for y in range(1, self.reqBatCou + 1):
-                    print threadID + " batch " + str(y) + " firing started at" + str(datetime.now())
-                    self.firingHttpRequests(threadID)
 
-                    if self.timInt != 0 and y < self.timInt + 1:
-                        print threadID + " waiting " + str(self.timInt) + " seconds till next request firing"
-                    else:
-                        self.finishingTheThread = 1
-                        print threadID + " Finished the request firing "
-                    time.sleep(self.timInt)
-
+                self.firingHttpRequests(threadID)
                 break
-                self.tcpSoc.close()
+
 
 
 
@@ -222,7 +221,7 @@ class threadForRemoteServerTest(threading.Thread):
                     queueLock.release()
                 self.connectingToRemoteServer(threadID)
                 break
-                self.tcpSoc.close()
+
 
 
     def connectingToRemoteServer(self, threadID):
@@ -323,7 +322,7 @@ class threadForMySQLTest(threading.Thread):
                     queueLock.release()
                 self.connectingAndTestingDB(threadID)
                 break
-                self.tcpSoc.close()
+
 
 
     def connectingAndTestingDB(self, threadID):
@@ -354,23 +353,35 @@ def creatingUsers_threadsForWebTests():
 
     global lockRelease
 
-    for x in range(1, threadForWebTest.noOfUse + 1):
+    global noOfThrInTheBeg
+    global reqBatCou
+    global timInt
+    global reqBatCouInc
+    global timIntInc
 
-        setThreadID = "Thread-" + str(x) + "_4WT"
-        setThreadName = "Thread for web test-" + str(x)
+    for x in range(1, reqBatCou +1):
+        lockRelease = 0
+        for y in range(1, noOfThrInTheBeg + 1):
 
-        try:
-            thread = threadForWebTest(setThreadID, setThreadName)
-            thread.start()
-            threadsForWebTests.append(thread)
+            setThreadID = "Thread-" + str(y) + "_of_B" + str(x) + "_4WT"
+            setThreadName = "Thread for web test-" + str(y) + "_of_B" + str(x)
 
-        except Exception as e:
-            print "Thread creating error in Thread-" + str(x)
-            print e
-            logging.warning("Thread creating error in Thread-" + str(x))
-            pass
+            try:
+                thread = threadForWebTest(setThreadID, setThreadName)
+                thread.start()
+                threadsForWebTests.append(thread)
 
-    lockRelease = 1
+            except Exception as e:
+                print "Thread creating error in Thread-" + str(y) + "_of_B" + str(x)
+                print e
+                logging.warning("Thread creating error in Thread-" + str(y) + "_of_B" + str(x))
+                pass
+        lockRelease = 1
+        time.sleep(timInt)
+        noOfThrInTheBeg += reqBatCouInc
+        timInt += timIntInc
+
+
 
 
 def creatingUsers_threadsForRemoteServerTests():
@@ -424,6 +435,29 @@ def creatingUsers_threadsForDBTests():
 
 def webTestInitialization():
 
+    #No Of Users
+    global noOfThrInTheBeg
+    noOfThrInTheBeg = input("Basic no. of requests in a request-batch at the beginning? (TPS)")
+
+    #request-batch count
+    global reqBatCou
+    reqBatCou = input("How many request-batches to fire ?")
+
+    #time interval between two batches
+    global timInt
+    timInt = input("Basic time interval between two request-batches at the beginning? Enter time in Seconds")
+
+    #Time interval incrementation between two batches
+    global timIntInc
+    timIntInc = input("Time interval increment between two request-batches? Enter time in Seconds")
+
+    #Incrementation number
+    global reqBatCouInc
+    reqBatCouInc = input("Requests incrementation for batches?")
+
+
+
+
     #Testing server url
     chkURL = raw_input("URL of the testing server? http://")
     if chkURL == "":
@@ -436,28 +470,16 @@ def webTestInitialization():
     #Waiting time
     threadForWebTest.timeToWait = input("Time out for a request? insert in seconds")
 
-    #No Of Users
-    threadForWebTest.noOfUse = input("How many users? Enter the no. of users")
-
-    #request-batch count
-    threadForWebTest.reqBatCou = input("How many request-batches to fire from a user?")
-
-    #time interval between two batches
-    threadForWebTest.timInt = input("Time interval between two request-batches? Enter time in Seconds")
-
-    #No Of Requests Per batch
-    threadForWebTest.noOfReqPerBat = input("Basic no. of requests in a batch?")
-
-    #Incrementation number
-    threadForWebTest.incNum = input("Requests incrementation for batches?")
-
     #what type of request
     threadForWebTest.requestType = input("Select 1 to send HEAD requests\n"
                                         "Select 2 to send GET requests\n"
                                         "Select 3 to send POST requests")
 
-    logging.info('A web test initialized at ' + str(datetime.now()) + ': No.of Users(threads)=' + str(threadForWebTest.noOfUse) + ', Requests per fire='\
-                 + str(threadForWebTest.noOfReqPerBat) + ', Loop count=' + str(threadForWebTest.reqBatCou) + ', Loop delay=' + str(threadForWebTest.timInt))
+    logging.info('A web test initialized at ' + str(datetime.now()) + ': TPS at the beginning=' + str(noOfThrInTheBeg) + ', TPS loop count='\
+                 + str(reqBatCou) + ', Time interval at the beginning =' + str(timInt) + ', Request incrementation =' + str(reqBatCouInc))
+
+
+
 
 
 def remoteServerUsageTestInitialization():
@@ -494,6 +516,7 @@ def startingTheProgramme():
                           "3) Checking a remote servers current usage\n"
                          ""
                           "4) Web test with remote servers usage")
+
 
     if selectingOpt == 1:
         webTestInitialization()
