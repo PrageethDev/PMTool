@@ -105,6 +105,7 @@ class threadForWebTest (threading.Thread):
             response = requests.get(self.tesSerURL, timeout=self.timeToWait) #timeout - timeToWaitForARequest
             response.content  # wait until full content has been transfered
             responseTime = datetime.now()
+            response.connection.close()
 
             transactionTime = responseTime - requestTime
 
@@ -158,7 +159,7 @@ class threadForWebTest (threading.Thread):
 
 
     def firingHttpRequests(self, threadID):
-        time.sleep(1)
+        #time.sleep(1)
         if self.requestType == 2:
                 self.httpGetRequest(threadID)
 

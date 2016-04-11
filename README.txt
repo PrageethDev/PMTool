@@ -28,22 +28,28 @@ There are 4 options in the main menu
 
 Web test
 ------------------
-This will send http requests to the selected server and check for responses and calculate the time for roundtrips
-1) enter the url of the server you want to perform the web test, just type the url or ip address and the port of the server; program will auto add the http:// infront of the url.
+This will send http requests to the selected server and check for responses and calculate the time for roundtrips.
+Here, a request-batch is the word to state how many requests to fire at once; which means how many requests to fire within a second.
 
-2) Then enter the time out time for requests, use seconds.
+1) Basic no. of requests in a request-batch at the beginning? (TPS); This means how many requests to fire at once in the beginning,
+this request quantity can be increment later. State how many requests should fire at the first fire.
 
-3) Then enter the number of users to send requests for the server; program will create a thread for each user and send requests parellaly.
+2) How many request-batches to fire ?; This mean how many times this request-batches should run? request quantity in these batches can be
+incremented or can keep constantly
 
-4) Then enter the number of request-batches to fire from a user; this means how many times you want to send sets of requests. A request-batch can consist any no. of requests. requests in a request-batch will fire continuesly one after one. But request-batches will start with a given time interval.
+3) Basic time interval between two request-batches at the beginning? Enter time in Seconds; there could be time interval between
+two firings, so the next request batch will hold for some time after firing the previous request-batch
 
-5) Enter the time interval between two request-batches; this should be in seconds.
+4) Time interval increment between two request-batches? Enter time in Seconds; The time interval can be incremented when firing
+request-batches, if you give 0 in here there will be no time interval incrementation between two request-batches.
+Or you can give a number, so the time will be incremented by that no. of seconds.
 
-6) Then enter the basic no. of requests in a request-batch. This will be the starting no. of requests in a request-batch.
+5) Requests incrementation for batches?; Requests in a batch also can be incremented with giving a no. for this. If you don't want to
+increment no. of requests in a request-batch you can insert 0.
 
-7) Then enter the requests incrementation for batches. This is the incrementing no. of requests for each batch. (eg: if the incrementing no. is 2, then second batch will send 2 more reqests than in the first batch)
+6) URL of the testing server?; Just provide the url of the server you wanted to connect. You can also insert it using the ip and the port.
 
-8) Then select the http request type you want.
+7) Time out for a request? insert in seconds; request timeout in seconds.
 
 
 
