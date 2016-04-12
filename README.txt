@@ -26,6 +26,7 @@ There are 4 options in the main menu
 3) Checking a remote servers current usage
 4) Web test with remote servers usage
 
+
 Web test
 ------------------
 This will send http requests to the selected server and check for responses and calculate the time for roundtrips.
@@ -54,7 +55,7 @@ increment no. of requests in a request-batch you can insert 0.
 
 
 MySQL test
------------------
+-----------
 1) Enter the host ip
 
 2) Enter the user name of the mysql user you want to login
@@ -67,12 +68,28 @@ MySQL test
 
 
 Checking a remote servers current usage
-------------------
+---------------------------------------
+
+This will perform a server performance checkup
+
+1) Enter the ip address of the remote server
+
+2) Then enter the user name of the remote servers user
+
+3) Provide the password for the user
+
+4) Select the test you want to perform
+
+5) Enter how many times you want to perform the test (this work as a loop)
+
+6) Finally enter what is the time interval between two test performs
 
 
 
+Web test with remote servers usage
+----------------------------------
 
-
+This will perform both "Web test" and the "Checking a remote servers current usage"
 
 
 
