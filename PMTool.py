@@ -20,9 +20,48 @@ setThreadID = 1
 queueLock = threading.Lock()
 lockRelease = 0
 
-logging.basicConfig(filename='log/PerformenceMeter.log', level=logging.DEBUG)
-logger1 = logging.getLogger('RSTest')
-logger2 = logging.getLogger('myapp.area2')
+
+# setting up the general log file to write everything
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    filename='log/PMTool.log',
+                    filemode='w')
+
+#Setting an additional(second) file to write only info from RSTest threads
+#-----------------------------------------------------------------
+RSTestLogger = logging.getLogger('RSTest')
+RSInfoLog = logging.FileHandler(filename='log/PMTool_RSTinfo.log', mode='w')
+RSTestLogger.addHandler(RSInfoLog)
+
+
+# setting writer to print in the console
+#---------------------------------------
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+# set a format which is simpler for console use
+consoleFormatter = logging.Formatter('%(name)-6s: %(levelname)-6s %(message)s')
+# tell the handler to use this format
+console.setFormatter(consoleFormatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
+
+
+#Setting an additional(second) file to write only the same errors
+#----------------------------------------------------------------
+errorLog = logging.FileHandler(filename='log/PMTool_error.log', mode='w')
+errorLog.setLevel(logging.ERROR)
+errorLogFormatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+errorLog.setFormatter(errorLogFormatter)
+logging.getLogger('').addHandler(errorLog)
+
+
+time.sleep(0.1)
+#log to the root logger, or any other logger
+logging.info('PMTool started...')
+
+
 
 #Variables for web tests
 
@@ -61,12 +100,8 @@ class threadForWebTest (threading.Thread):
         self.threadName = threadName
 
     def run(self):
-        print "Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now())
         logging.info("Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now()))
-
         self.processingWorks(self.threadID)
-
-        print "Exiting " + self.threadID + " at " + str(datetime.now())
         logging.info("Exiting " + self.threadID + " at " + str(datetime.now()))
 
 
@@ -78,22 +113,16 @@ class threadForWebTest (threading.Thread):
             response = requests.head(self.tesSerURL, timeout=self.timeToWait) #timeout - timeToWaitForARequest
             response.content  # wait until full content has been transfered
             responseTime = datetime.now()
-
             transactionTime = responseTime - requestTime
 
             logging.info(str(threadID) + " HEAD request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
-
-            print (str(threadID) + " HEAD request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print (str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
 
         except Exception as printExcep:
             requestTime = datetime.now()
             #traceback.print_exc()
             logging.info(str(threadID) + " HEAD request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(printExcep))
-            print (str(threadID) + " HEAD request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print printExcep
             pass
 
 
@@ -112,16 +141,12 @@ class threadForWebTest (threading.Thread):
             logging.info(str(threadID) + " GET request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
 
-            print (str(threadID) + " GET request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print (str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
 
         except Exception as printExcep:
             requestTime = datetime.now()
             #traceback.print_exc()
             logging.info(str(threadID) + " GET request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(printExcep))
-            print (str(threadID) + " GET request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print printExcep
             pass
 
     def httpPostRequest(self, threadID):
@@ -137,22 +162,16 @@ class threadForWebTest (threading.Thread):
             response = requests.post(self.tesSerURL, data=writePostData, timeout=self.timeToWait) #timeout - timeToWaitForARequest
             response.content  # wait until full content has been transfered
             responseTime = datetime.now()
-
             transactionTime = responseTime - requestTime
 
             logging.info(str(threadID) + " POST request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
-
-            print (str(threadID) + " POST request " + str(self.fireNum) + " fired successfully at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print (str(threadID) + " response " + str(self.fireNum) + " receive completed at " + str(responseTime) + "  status code: " + str(response.status_code) + " roundtrip time: " + str(transactionTime))
 
         except Exception as printExcep:
             requestTime = datetime.now()
             #traceback.print_exc()
             logging.info(str(threadID) + " POST request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
             logging.info(str(printExcep))
-            print (str(threadID) + " POST request " + str(self.fireNum) + " fired, but completion failed at " + str(requestTime) + " to " + str(self.tesSerURL))
-            print printExcep
             pass
 
 
@@ -202,13 +221,8 @@ class threadForRemoteServerTest(threading.Thread):
         self.threadName = threadName
 
     def run(self):
-
-        print "Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now())
         logging.info("Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now()))
-
         self.processingWorks(self.threadID)
-
-        print "Exiting " + self.threadID + " at " + str(datetime.now())
         logging.info("Exiting " + self.threadID + " at " + str(datetime.now()))
 
 
@@ -226,7 +240,7 @@ class threadForRemoteServerTest(threading.Thread):
 
 
     def connectingToRemoteServer(self, threadID):
-        global logger1
+        global RSTestLogger
         # connection to the remote server
         command = ""
 
@@ -236,7 +250,8 @@ class threadForRemoteServerTest(threading.Thread):
 
         try:
             ssh.connect(self.ip, username=self.userName, password=self.password, look_for_keys=False, allow_agent=False)
-            print threadID, "Connected to ", self.userName, "@", self.ip
+            logging.info(str(threadID) + " Connected to " + str(self.userName) + "@" + str(self.ip))
+            #print str(threadID) + " Connected to " + str(self.userName) + "@" + str(self.ip)
 
             #selecting the command
             selectingCommand = raw_input( "select the no. for the operation you want to perform in " + str(threadID) + " \n"
@@ -249,10 +264,10 @@ class threadForRemoteServerTest(threading.Thread):
             if selectingCommand == "1":
                 command = 'free'
             elif selectingCommand == "2":
-                command = 'free'
+                command = 'mpstat'
 
         except Exception:
-            print "Can't login to remote server; check credentials"
+            logging.error("Can't login to remote server; check credentials")
             pass
 
         self.activeIndicator = 1
@@ -265,23 +280,23 @@ class threadForRemoteServerTest(threading.Thread):
                 # read each line of the free -m command for pretty printing in the next step
                 type(stdin)
                 output = stdout.readlines()
-                logging.info(str(threadID) + str(datetime.now()))
-                logger1.info(str(threadID) + str(datetime.now()))
-                print threadID + str(datetime.now())
+                #logging.info(str(threadID) + str(datetime.now()))
+                RSTestLogger.info(str(threadID) + " @ " + str(datetime.now()))
+
                 # this will display the output
                 length = len(output)
                 for x in range(0, length):
-                    logging.info(str(output[x]))
-                    logger1.info(str(output[x]))
-                    print output[x]
+                    #logging.info(str(output[x]))
+                    RSTestLogger.info(str(output[x]))
+
 
                 y += 1
                 time.sleep(RSTestWaitTime)
 
         except Exception as printExcept:
             traceback.print_exc()
-            print printExcept
-            print "Can't perform the test in the remote server"
+            logging.error("Error while executing command in the remote server")
+            logging.error(printExcept)
             pass
         ssh.close()
 
@@ -303,13 +318,8 @@ class threadForMySQLTest(threading.Thread):
         self.threadName = threadName
 
     def run(self):
-
-        print "Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now())
         logging.info("Starting " + self.threadID + ", " + self.threadName + " at " + str(datetime.now()))
-
         self.processingWorks(self.threadID)
-
-        print "Exiting " + self.threadID + " at " + str(datetime.now())
         logging.info("Exiting " + self.threadID + " at " + str(datetime.now()))
 
 
@@ -373,9 +383,8 @@ def creatingUsers_threadsForWebTests():
                 threadsForWebTests.append(thread)
 
             except Exception as e:
-                print "Thread creating error in Thread-" + str(y) + "_of_B" + str(x)
-                print e
                 logging.warning("Thread creating error in Thread-" + str(y) + "_of_B" + str(x))
+                logging.warning(e)
                 pass
         lockRelease = 1
         time.sleep(timInt)
@@ -401,9 +410,8 @@ def creatingUsers_threadsForRemoteServerTests():
 
         except Exception as e:
             traceback.print_exc()
-            print "Thread creating error in ThreadRST-" + str(x)
-            print e
             logging.warning("Thread creating error in Thread_RST-" + str(x))
+            logging.warning(e)
             pass
 
     lockRelease = 1
@@ -424,10 +432,8 @@ def creatingUsers_threadsForDBTests():
             threadsForMySQLTests.append(thread3)
 
         except Exception as e:
-
-            print "Thread creating error in ThreadRST-" + str(x)
-            print e
             logging.warning("Thread creating error in Thread_DBT-" + str(x))
+            logging.warning(e)
             pass
 
     lockRelease = 1
@@ -511,13 +517,21 @@ def mySQLPerformenceTestInitialization():
 
 def startingTheProgramme():
     print "Welcome to performence testing tool"
-    selectingOpt = input("Please select number for the test you want to perform\n"
+    while 1:
+        try:
+            selectingOpt = input("Please select number for the test you want to perform\n"
                           "1) Web test\n"
                           "2) MySQL test\n"
                           "3) Checking a remote servers current usage\n"
                          ""
                           "4) Web test with remote servers usage")
-
+            if (selectingOpt == 1 or selectingOpt == 2 or selectingOpt == 3 or selectingOpt == 4):
+                break
+            else:
+                print "Please enter a valid number"
+        except:
+            print "Please enter a valid number"
+            pass
 
     if selectingOpt == 1:
         webTestInitialization()
@@ -530,6 +544,7 @@ def startingTheProgramme():
         creatingUsers_threadsForRemoteServerTests()
     elif selectingOpt == 4:
         webTestInitialization()
+        time.sleep(0.5)
         remoteServerUsageTestInitialization()
         creatingUsers_threadsForRemoteServerTests()
         while (threadsForRemoteServerTests[0].activeIndicator == 0):
@@ -552,7 +567,7 @@ for allThreads2 in threadsForRemoteServerTests:
 for allThreads3 in threadsForMySQLTests:
     allThreads3.join()
 
-print "Exiting the Thread array"
+
 logging.info('Exiting the Thread array')
 logging.info('Testing finished at ' + str(datetime.now()))
 logging.info('-----------------------------------------------------------------------------------------')
